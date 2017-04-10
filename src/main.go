@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"encoding/json"
 	"flag"
-	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -71,6 +70,7 @@ type queryIndex map[string]map[string][]string
 type query map[string]map[string]map[string]map[string]interface{}
 
 var fin = new(result)
+var limitFlag = flag.Int("l", 5, "the number of results to be displayed")
 
 func main() {
 
@@ -80,7 +80,6 @@ func main() {
 
 	versionFlag := flag.Bool("v", false, "Print the version number.")
 	searchFlag := flag.String("s", "", "a search value")
-	limitFlag := flag.Int("l", 5, "the number of results to be displayed")
 	flag.Parse() // Scan the arguments list
 
 	// === Header ================================================================
@@ -107,8 +106,6 @@ func main() {
 
 	}
 
-	readArticle()
-
 }
 
 // === Helper Functions ======================================================
@@ -133,6 +130,7 @@ func searchWiki(search string, limit int) {
 	}
 
 	printResults(s)
+	readArticle()
 
 }
 
@@ -168,7 +166,7 @@ func loadSearch(body []byte) (*tmp, error) {
 
 	if err != nil {
 		// un-comment bellow to see errors for json parsing
-		fmt.Println("whoops:", err)
+		//fmt.Println("whoops:", err)
 	}
 
 	return s, err
@@ -267,12 +265,23 @@ func readArticle() {
 	for i, entry := range (*qi)["query"]["pageids"] {
 		if i == 0 {
 			titleColor("================================================================================")
-			titleColor("Reading: ", (*q)["query"]["pages"][entry]["title"])
+			titleColor("=", (*q)["query"]["pages"][entry]["title"])
 			titleColor("================================================================================")
 			//prettyPrintPage((*q)["query"]["pages"][entry]["extract"].(string))
 			infoColor((*q)["query"]["pages"][entry]["extract"])
 		}
 	}
+
+	reader := bufio.NewReader(os.Stdin)
+	inputColor("Return to results? (y/n) ")
+	text, _ = reader.ReadString('\n')
+
+	if text[0] == 'y' {
+		searchWiki(fin.search, *limitFlag)
+	} else {
+		os.Exit(0)
+	}
+
 	//inputColor("page: ", (*q)["query"])
 }
 
