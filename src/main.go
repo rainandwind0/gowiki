@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -52,6 +53,23 @@ type result struct {
 	links  []string
 }
 
+/*type query struct {
+	Batchcomplete string `json:"batchcomplete"`
+	Query         struct {
+		Pages struct {
+			Num struct {
+				Pageid  int
+				Ns      int
+				Title   string
+				Extract string
+			}
+		}
+	}
+}*/
+
+type queryIndex map[string]map[string][]string
+type query map[string]map[string]map[string]map[string]interface{}
+
 var fin = new(result)
 
 func main() {
@@ -89,6 +107,8 @@ func main() {
 
 	}
 
+	readArticle()
+
 }
 
 // === Helper Functions ======================================================
@@ -114,10 +134,6 @@ func searchWiki(search string, limit int) {
 
 	printResults(s)
 
-	reader := bufio.NewReader(os.Stdin)
-	inputColor("Enter an index to read more: ")
-	text, _ := reader.ReadString('\n')
-	inputColor("reading entry:", text)
 }
 
 /*
@@ -152,7 +168,7 @@ func loadSearch(body []byte) (*tmp, error) {
 
 	if err != nil {
 		// un-comment bellow to see errors for json parsing
-		//fmt.Println("whoops:", err)
+		fmt.Println("whoops:", err)
 	}
 
 	return s, err
@@ -190,6 +206,78 @@ func printResults(s *tmp) {
 		infoColor(desc)
 		inputColor("")
 	}
+}
+
+func getArticle(index int) []byte {
+	var esc = url.QueryEscape(fin.titles[index])
+	res, err := client.Get("https://en.wikipedia.org/w/api.php?format=json&action=query&indexpageids=&prop=extracts&explaintext=&titles=" + esc + "&format=json")
+	if err != nil {
+		panic(err.Error())
+	}
+
+	body, err := ioutil.ReadAll(res.Body)
+
+	if err != nil {
+		panic(err.Error())
+	}
+	return body
+}
+
+func parseArticle(body []byte) (*query, error) {
+	var q = new(query)
+	err := json.Unmarshal(body, &q)
+	if err != nil {
+		// un-comment bellow to see errors for json parsing
+		// fmt.Println("whoops:", err)
+	}
+
+	return q, err
+}
+
+func parseArticleIndex(body []byte) (*queryIndex, error) {
+	var q = new(queryIndex)
+	err := json.Unmarshal(body, &q)
+	if err != nil {
+		// fmt.Println("whoops:", err)
+	}
+
+	return q, err
+}
+
+func readArticle() {
+	var text = ""
+	var check = 0
+	check, err := strconv.Atoi(text)
+
+	for err != nil {
+		reader := bufio.NewReader(os.Stdin)
+		inputColor("Enter an index to read more: ")
+		text, _ = reader.ReadString('\n')
+		check, err = strconv.Atoi(text[0 : len(text)-2])
+		if err != nil {
+			inputColor(err)
+		}
+	}
+
+	body := getArticle(check)
+	q, err := parseArticle(body)
+	qi, err := parseArticleIndex(body)
+
+	inputColor("reading entry:", text)
+	for i, entry := range (*qi)["query"]["pageids"] {
+		if i == 0 {
+			titleColor("================================================================================")
+			titleColor("Reading: ", (*q)["query"]["pages"][entry]["title"])
+			titleColor("================================================================================")
+			//prettyPrintPage((*q)["query"]["pages"][entry]["extract"].(string))
+			infoColor((*q)["query"]["pages"][entry]["extract"])
+		}
+	}
+	//inputColor("page: ", (*q)["query"])
+}
+
+func prettyPrintPage(page string) {
+
 }
 
 /*
