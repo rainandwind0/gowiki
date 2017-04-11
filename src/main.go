@@ -206,6 +206,11 @@ func printResults(s *tmp) {
 	}
 }
 
+/*
+	|	getArticle 	- request the article from the wikipedia api using the index provided
+	|		index	- The index of the article to read from the list of search results
+	|		return	- The byte array of the articles data that is ready to be unmarshaled
+*/
 func getArticle(index int) []byte {
 	var esc = url.QueryEscape(fin.titles[index])
 	res, err := client.Get("https://en.wikipedia.org/w/api.php?format=json&action=query&indexpageids=&prop=extracts&explaintext=&titles=" + esc + "&format=json")
@@ -221,6 +226,11 @@ func getArticle(index int) []byte {
 	return body
 }
 
+/*
+	|	parseArticle 	- unmarshals the json byte array of the article to be read to get the page data
+	|		body		- The body to be unmarshaled
+	|		return		- The unmarshaled pages
+*/
 func parseArticle(body []byte) (*query, error) {
 	var q = new(query)
 	err := json.Unmarshal(body, &q)
@@ -232,6 +242,11 @@ func parseArticle(body []byte) (*query, error) {
 	return q, err
 }
 
+/*
+	|	parseArticleIndex 	- unmarshals the json byte array of the article to be read to get the page indexes
+	|		body			- The body to be unmarshaled
+	|		return			- The unmarshaled indexes
+*/
 func parseArticleIndex(body []byte) (*queryIndex, error) {
 	var q = new(queryIndex)
 	err := json.Unmarshal(body, &q)
@@ -242,6 +257,9 @@ func parseArticleIndex(body []byte) (*queryIndex, error) {
 	return q, err
 }
 
+/*
+	|	readArticle 	- collects the index from the user to begin loading the article to read
+*/
 func readArticle() {
 	var text = ""
 	var check = 0
@@ -285,6 +303,9 @@ func readArticle() {
 	//inputColor("page: ", (*q)["query"])
 }
 
+/*
+	|	prettyPrintPage - Print the page information in a beautified format (highlight the titles)
+*/
 func prettyPrintPage(page string) {
 
 }
