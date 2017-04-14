@@ -11,6 +11,6 @@ Limit the number of results to be displayed: `go run src/main.go -l=10`
 See the version number: `go run src/main.go -v`
 
 ## Todo:
-[] Add option to select only intro of returned article  
-[] Write to file  
-[] Pretty print (especially with nested heading)  
+[ ] Add option to select only intro of returned article  
+[ ] Write to file  
+[ ] Pretty print (especially with nested heading)  
