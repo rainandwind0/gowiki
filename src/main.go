@@ -72,6 +72,9 @@ type query map[string]map[string]map[string]map[string]interface{}
 var fin = new(result)
 var limitFlag = flag.Int("l", 5, "the number of results to be displayed")
 
+// use for writing to file
+var writeToFile = flag.Bool("f", false, "write aritcle to file instead of console")
+
 func main() {
 
 	// === Flags and arguments ===================================================
@@ -125,14 +128,24 @@ func searchWiki(search string, limit int) {
 	body := getResults(esc, strconv.Itoa(limit))
 
 	s, err := loadSearch(body)
-	if err != nil {
-
-	}
+	if err != nil {}
 
 	printResults(s)
 	readArticle()
+	//if *writeToFile {
+	//	writeFile(s)
+	//} else {
+	//	readArticle()
+	//}
 
 }
+
+//func writeFile(content string) {
+//	err := ioutil.WriteFile("test.txt", content, 0644)
+//	if (err != nil) {
+//		panic(err)
+//	}
+//}
 
 /*
 	|	getResults 	- get the results from the wikipedia server
@@ -269,7 +282,7 @@ func readArticle() {
 		reader := bufio.NewReader(os.Stdin)
 		inputColor("Enter an index to read more: ")
 		text, _ = reader.ReadString('\n')
-		check, err = strconv.Atoi(text[0 : len(text)-2])
+		check, err = strconv.Atoi(text[0 : len(text) - 1])
 		if err != nil {
 			inputColor(err)
 		}
@@ -278,13 +291,20 @@ func readArticle() {
 	body := getArticle(check)
 	q, err := parseArticle(body)
 	qi, err := parseArticleIndex(body)
-
 	inputColor("reading entry:", text)
 	for i, entry := range (*qi)["query"]["pageids"] {
 		if i == 0 {
+			//if (*writeToFile) {
+			//	err := ioutil.WriteFile("test.txt", q, 0644)
+			//	//ioutil.WriteFile()
+			//	if (err != nil) {
+			//		panic(err)
+			//	}
+			//}
 			titleColor("================================================================================")
 			titleColor("=", (*q)["query"]["pages"][entry]["title"])
 			titleColor("================================================================================")
+
 			//prettyPrintPage((*q)["query"]["pages"][entry]["extract"].(string))
 			infoColor((*q)["query"]["pages"][entry]["extract"])
 		}
@@ -300,7 +320,7 @@ func readArticle() {
 		os.Exit(0)
 	}
 
-	//inputColor("page: ", (*q)["query"])
+	inputColor("page: ", (*q)["query"])
 }
 
 /*
