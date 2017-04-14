@@ -14,3 +14,4 @@ See the version number: `go run src/main.go -v`
 - [ ] Add option to select only intro of returned article  
 - [ ] Write to file  
 - [ ] Pretty print (especially with nested heading)  
+- [ ] Binary installer
