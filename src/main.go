@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
+	//"fmt"
 )
 
 /*
@@ -132,12 +133,6 @@ func searchWiki(search string, limit int) {
 
 	printResults(s)
 	readArticle()
-	//if *writeToFile {
-	//	writeFile(s)
-	//} else {
-	//	readArticle()
-	//}
-
 }
 
 //func writeFile(content string) {
@@ -291,25 +286,21 @@ func readArticle() {
 	body := getArticle(check)
 	q, err := parseArticle(body)
 	qi, err := parseArticleIndex(body)
-	inputColor("reading entry:", text)
-	for i, entry := range (*qi)["query"]["pageids"] {
-		if i == 0 {
-			//if (*writeToFile) {
-			//	err := ioutil.WriteFile("test.txt", q, 0644)
-			//	//ioutil.WriteFile()
-			//	if (err != nil) {
-			//		panic(err)
-			//	}
-			//}
-			titleColor("================================================================================")
-			titleColor("=", (*q)["query"]["pages"][entry]["title"])
-			titleColor("================================================================================")
 
-			//prettyPrintPage((*q)["query"]["pages"][entry]["extract"].(string))
-			infoColor((*q)["query"]["pages"][entry]["extract"])
+	if (*writeToFile) {
+		writeFile(qi, q);
+	} else {
+		inputColor("reading entry:", text)
+		for i, entry := range (*qi)["query"]["pageids"] {
+			if i == 0 {
+				titleColor("================================================================================")
+				titleColor("=", (*q)["query"]["pages"][entry]["title"])
+				titleColor("================================================================================")
+				//prettyPrintPage((*q)["query"]["pages"][entry]["extract"].(string))
+				infoColor((*q)["query"]["pages"][entry]["extract"])
+			}
 		}
 	}
-
 	reader := bufio.NewReader(os.Stdin)
 	inputColor("Return to results? (y/n) ")
 	text, _ = reader.ReadString('\n')
@@ -324,11 +315,41 @@ func readArticle() {
 }
 
 /*
+	|	writeFile 	- write selected article to file instead of standard out
+	|		qi			- The unmarshaled indexes of articles to be read
+	|		q			- The unmarshaled pages to write to file
+*/
+func writeFile(qi *queryIndex, q *query) {
+	fileWriter, fileError := os.Create("DEFAULT_FILE_NAME")
+	var articleTitle = ""
+
+	// catch exception
+	if (fileError != nil) {
+		panic(fileError);
+	}
+
+	// It's idiomatic to defer a `Close` immediately
+	// after opening a file.
+	defer fileWriter.Close()
+
+	for i, entry := range (*qi)["query"]["pageids"] {
+		if i == 0 {
+			fileWriter.WriteString("================================================================================\n")
+			fileWriter.WriteString("= " + (*q)["query"]["pages"][entry]["title"].(string) + "\n")
+			fileWriter.WriteString("================================================================================\n")
+			//prettyPrintPage((*q)["query"]["pages"][entry]["extract"].(string))
+			fileWriter.WriteString((*q)["query"]["pages"][entry]["extract"].(string) + "\n")
+		}
+		articleTitle = (*q)["query"]["pages"][entry]["title"].(string);
+	}
+	// rename from default name to filename that contains the article title
+	os.Rename("DEFAULT_FILE_NAME", ("gowiki_search_" + articleTitle))
+}
+
+/*
 	|	prettyPrintPage - Print the page information in a beautified format (highlight the titles)
 */
-func prettyPrintPage(page string) {
-
-}
+func prettyPrintPage(page string) {}
 
 /*
 	|	printHeader - print the fancy ASCII art header
