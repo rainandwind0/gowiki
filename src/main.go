@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	//"fmt"
 )
 
 /*
@@ -75,6 +74,7 @@ var limitFlag = flag.Int("l", 5, "the number of results to be displayed")
 
 // use for writing to file
 var writeToFile = flag.Bool("f", false, "write aritcle to file instead of console")
+var DEFAULT_FILE_NAME = "gowiki_search_"
 
 func main() {
 
@@ -134,13 +134,6 @@ func searchWiki(search string, limit int) {
 	printResults(s)
 	readArticle()
 }
-
-//func writeFile(content string) {
-//	err := ioutil.WriteFile("test.txt", content, 0644)
-//	if (err != nil) {
-//		panic(err)
-//	}
-//}
 
 /*
 	|	getResults 	- get the results from the wikipedia server
@@ -320,7 +313,7 @@ func readArticle() {
 	|		q			- The unmarshaled pages to write to file
 */
 func writeFile(qi *queryIndex, q *query) {
-	fileWriter, fileError := os.Create("DEFAULT_FILE_NAME")
+	fileWriter, fileError := os.Create(DEFAULT_FILE_NAME)
 	var articleTitle = ""
 
 	// catch exception
@@ -342,8 +335,8 @@ func writeFile(qi *queryIndex, q *query) {
 		}
 		articleTitle = (*q)["query"]["pages"][entry]["title"].(string);
 	}
-	// rename from default name to filename that contains the article title
-	os.Rename("DEFAULT_FILE_NAME", ("gowiki_search_" + articleTitle))
+	// rename default name to one that contains the article title
+	os.Rename(DEFAULT_FILE_NAME, (DEFAULT_FILE_NAME + articleTitle))
 }
 
 /*
