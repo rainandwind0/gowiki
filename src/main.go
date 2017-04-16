@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+	"strings"
 
 	"time"
 
@@ -97,17 +98,9 @@ func main() {
 	}
 
 	if *searchFlag != "" {
-
 		searchWiki(*searchFlag, *limitFlag)
-
 	} else {
-
-		reader := bufio.NewReader(os.Stdin)
-		inputColor("Enter a search string: ")
-		search, _ := reader.ReadString('\n')
-
-		searchWiki(search, *limitFlag)
-
+		searchPrompt()
 	}
 
 }
@@ -132,6 +125,22 @@ func searchWiki(search string, limit int) {
 	if err != nil {}
 
 	printResults(s)
+
+	if len(fin.titles) == 0 {
+
+		text := ""
+
+		reader := bufio.NewReader(os.Stdin)
+		inputColor("No results found. Try new search? (y/n) ")
+		text, _ = reader.ReadString('\n')
+
+		if text[0] == 'y' {
+			searchPrompt()
+		} else {
+			os.Exit(0)
+		}
+	}
+
 	readArticle()
 }
 
@@ -274,14 +283,18 @@ func readArticle() {
 		if err != nil {
 			inputColor(err)
 		}
+		if check < 0 || check > len(fin.titles) {
+			inputColor("Invalid index.")
+			os.Exit(1)
+		}
 	}
 
 	body := getArticle(check)
 	q, err := parseArticle(body)
 	qi, err := parseArticleIndex(body)
 
-	if (*writeToFile) {
-		writeFile(qi, q);
+	if *writeToFile {
+		writeFile(qi, q)
 	} else {
 		inputColor("reading entry:", text)
 		for i, entry := range (*qi)["query"]["pageids"] {
@@ -289,8 +302,8 @@ func readArticle() {
 				titleColor("================================================================================")
 				titleColor("=", (*q)["query"]["pages"][entry]["title"])
 				titleColor("================================================================================")
-				//prettyPrintPage((*q)["query"]["pages"][entry]["extract"].(string))
-				infoColor((*q)["query"]["pages"][entry]["extract"])
+				prettyPrintPage((*q)["query"]["pages"][entry]["extract"].(string))
+				// infoColor((*q)["query"]["pages"][entry]["extract"])
 			}
 		}
 	}
@@ -317,8 +330,8 @@ func writeFile(qi *queryIndex, q *query) {
 	var articleTitle = ""
 
 	// catch exception
-	if (fileError != nil) {
-		panic(fileError);
+	if fileError != nil {
+		panic(fileError)
 	}
 
 	// It's idiomatic to defer a `Close` immediately
@@ -333,7 +346,7 @@ func writeFile(qi *queryIndex, q *query) {
 			//prettyPrintPage((*q)["query"]["pages"][entry]["extract"].(string))
 			fileWriter.WriteString((*q)["query"]["pages"][entry]["extract"].(string) + "\n")
 		}
-		articleTitle = (*q)["query"]["pages"][entry]["title"].(string);
+		articleTitle = (*q)["query"]["pages"][entry]["title"].(string)
 	}
 	// rename default name to one that contains the article title
 	os.Rename(DEFAULT_FILE_NAME, (DEFAULT_FILE_NAME + articleTitle))
@@ -342,7 +355,39 @@ func writeFile(qi *queryIndex, q *query) {
 /*
 	|	prettyPrintPage - Print the page information in a beautified format (highlight the titles)
 */
-func prettyPrintPage(page string) {}
+func prettyPrintPage(page string) {
+
+	scanner := bufio.NewScanner(strings.NewReader(page))
+
+	for scanner.Scan() == true {
+		if strings.Contains(scanner.Text(), "==") { // is some sort of heading
+			if !strings.Contains(scanner.Text(), "===") { // is a main heading
+				titleColor(strings.Replace(scanner.Text(), "=", "", -1))
+				titleColor("--------------------------------------------------------------------------------")
+			} else if !strings.Contains(scanner.Text(), "====") { // is a subheading
+				titleColor(">" + strings.Replace(scanner.Text(), "=", "", -1))
+			} else { // is a sub-subheading or lower
+				titleColor("   >>" + strings.Replace(scanner.Text(), "=", "", -1))
+			}
+
+			scanner.Scan()
+		}
+
+		infoColor(scanner.Text())
+	}
+}
+
+/*
+	|	searchPrompt - prompts user for an input string and calls searchWiki on that string
+*/
+func searchPrompt() {
+
+	reader := bufio.NewReader(os.Stdin)
+	inputColor("Enter a search string: ")
+	search, _ := reader.ReadString('\n')
+
+	searchWiki(search, *limitFlag)
+}
 
 /*
 	|	printHeader - print the fancy ASCII art header
