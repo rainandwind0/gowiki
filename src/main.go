@@ -129,7 +129,8 @@ func searchWiki(search string, limit int) {
 	body := getResults(esc, strconv.Itoa(limit))
 
 	s, err := loadSearch(body)
-	if err != nil {}
+	if err != nil {
+	}
 
 	printResults(s)
 	readArticle()
@@ -270,7 +271,7 @@ func readArticle() {
 		reader := bufio.NewReader(os.Stdin)
 		inputColor("Enter an index to read more: ")
 		text, _ = reader.ReadString('\n')
-		check, err = strconv.Atoi(text[0 : len(text) - 1])
+		check, err = strconv.Atoi(text[0: len(text)-1])
 		if err != nil {
 			inputColor(err)
 		}
@@ -280,8 +281,8 @@ func readArticle() {
 	q, err := parseArticle(body)
 	qi, err := parseArticleIndex(body)
 
-	if (*writeToFile) {
-		writeFile(qi, q);
+	if *writeToFile {
+		writeFile(qi, q)
 	} else {
 		inputColor("reading entry:", text)
 		for i, entry := range (*qi)["query"]["pageids"] {
@@ -317,8 +318,8 @@ func writeFile(qi *queryIndex, q *query) {
 	var articleTitle = ""
 
 	// catch exception
-	if (fileError != nil) {
-		panic(fileError);
+	if fileError != nil {
+		panic(fileError)
 	}
 
 	// It's idiomatic to defer a `Close` immediately
@@ -333,10 +334,10 @@ func writeFile(qi *queryIndex, q *query) {
 			//prettyPrintPage((*q)["query"]["pages"][entry]["extract"].(string))
 			fileWriter.WriteString((*q)["query"]["pages"][entry]["extract"].(string) + "\n")
 		}
-		articleTitle = (*q)["query"]["pages"][entry]["title"].(string);
+		articleTitle = (*q)["query"]["pages"][entry]["title"].(string)
 	}
 	// rename default name to one that contains the article title
-	os.Rename(DEFAULT_FILE_NAME, (DEFAULT_FILE_NAME + articleTitle))
+	os.Rename(DEFAULT_FILE_NAME, DEFAULT_FILE_NAME+articleTitle)
 }
 
 /*

@@ -13,5 +13,5 @@ See the version number: `go run src/main.go -v`
 ## Todo:
 - [ ] Add option to select only intro of returned article  
 - [x] Write to file  
-- [ ] Pretty print (especially with nested heading)  
+- [x] Pretty print (especially with nested heading)  
 - [ ] Binary installer
