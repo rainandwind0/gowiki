@@ -280,7 +280,7 @@ func readArticle() {
 		reader := bufio.NewReader(os.Stdin)
 		inputColor("Enter an index to read more: ")
 		text, _ = reader.ReadString('\n')
-		check, err = strconv.Atoi(text[0: len(text)-1])
+		check, err = strconv.Atoi(text[0: len(text)-2])
 		if err != nil {
 			inputColor(err)
 		}
