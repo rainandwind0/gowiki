@@ -4,7 +4,7 @@
 ## Setting-up GoWiki
 1. Install Go for your preferred [platform](https://golang.org/doc/install)  
 2. Install the [Color](https://github.com/fatih/color) package as follow:  
-    `go get http://github.com/fatih/color`
+    `go get github.com/fatih/color`
 3. Clone the GoWiki repository:  
     `git clone https://github.com/rainandwind0/gowiki.git`  
 4. From the root of the project directory issue:  
